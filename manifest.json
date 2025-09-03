@@ -1,0 +1,24 @@
+{
+  "name": "Aplikasi Catatan Keuangan",
+  "short_name": "Catatan Keuangan",
+  "description": "Aplikasi pencatatan keuangan pribadi oleh Faiz untuk Ellen Azra",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "linear-gradient(135deg, #e66465 0%, #9198e5 100%)",
+  "theme_color": "linear-gradient(135deg, #e66465 0%, #9198e5 100%)",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["finance", "productivity"],
+  "lang": "id"
+}
