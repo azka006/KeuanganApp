@@ -4,8 +4,8 @@
   "description": "Aplikasi pencatatan keuangan pribadi oleh Faiz untuk Ellen Azra",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "linear-gradient(135deg, #e66465 0%, #9198e5 100%)",
-  "theme_color": "linear-gradient(135deg, #e66465 0%, #9198e5 100%)",
+  "background_color": "#6C63FF",
+  "theme_color": "#6C63FF",
   "orientation": "portrait",
   "icons": [
     {
