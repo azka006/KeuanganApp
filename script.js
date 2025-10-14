@@ -2843,7 +2843,7 @@
         
         // ===== CONFIGURATION =====
         const CONFIG = {
-            APP_NAME: 'Aplikasi Data Keuangan Pribadi',
+            APP_NAME: 'Aplikasi Data Keuangan',
             BRAND_NAME: '~Ellen Azra~',
             SPLASH_DURATION: 5500,
             ANIMATION_PATH: 'logo.json',
