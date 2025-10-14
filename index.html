@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Catatan Keuangan</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.8/lottie.min.js"></script>
+    <!-- Tambahkan ini di bagian head -->
+    <meta name="theme-color" content="#6C63FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Catatan Keuangan">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Untuk splash screen iOS -->
+    <link rel="apple-touch-startup-image" href="splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="stylesheet" href="style.css" id="main-theme">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single+Ink:wght@100..900&family=Caprasimo&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <div id="catatan-notification" class="catatan-notification" style="display: none;">
+    <i class="fas fa-sticky-note" style="animation: bounce 2s infinite;"></i>
+    <span>Lihat catatan keuangan Anda</span>
+    <button class="close-btn" onclick="sembunyikanNotifikasiCatatan()">
+        <i class="fas fa-times"></i>
+    </button>
+    </div>
+
+    <section id="section-form">
+        <h2><i class="fas fa-pen-to-square"></i> Form Transaksi</h2>
+        <form id="form-transaksi">
+            <label><i class="fas fa-calendar-days"></i> Tanggal:
+                <input type="date" id="tanggal" required>
+            </label>
+            <label><i class="fas fa-money-bill-transfer"></i> Jenis:
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="jenis" value="pemasukan" required> <i class="fas fa-money-bill-trend-up"></i> Pemasukan
+                    </label>
+                    <label>
+                        <input type="radio" name="jenis" value="pengeluaran"> <i class="fas fa-money-bill-transfer"></i> Pengeluaran
+                    </label>
+                </div>
+            </label>
+            <label><i class="fas fa-align-left"></i> Deskripsi:
+                <input type="text" id="deskripsi" required>
+            </label>
+            <label><i class="fas fa-tags"></i> Kategori:
+                <select id="kategori" required>
+                    <option value="Pemasukan">Pemasukan</option>
+                    <option value="Perawatan Diri & Kecantikan">Perawatan Diri & Kecantikan</option>
+                    <option value="Kebutuhan Pribadi">Kebutuhan Pribadi</option>
+                    <option value="Kesehatan">Kesehatan</option>
+                    <option value="Makanan & Minuman">Makanan & Minuman</option>
+                    <option value="Transportasi & Kendaraan">Transportasi & Kendaraan</option>
+                    <option value="Tagihan & Komunikasi">Tagihan & Komunikasi</option>
+                    <option value="Pakaian & Aksesori">Pakaian & Aksesori</option>
+                    <option value="Elektronik & Gadget">Elektronik & Gadget</option>
+                    <option value="Sosial & Hadiah">Sosial & Hadiah</option>
+                    <option value="Orang Tua & Keluarga">Orang Tua & Keluarga</option>
+                    <option value="Kebutuhan Rumah">Kebutuhan Rumah</option>
+                    <option value="Tabungan & Investasi">Tabungan & Investasi</option>
+                    <option value="Peralatan & Barang Sehari-hari">Peralatan & Barang Sehari-hari</option>
+                    <option value="Administrasi & Dokumen">Administrasi & Dokumen</option>
+                    <option value="lainnya">Lainnya</option>
+                </select>
+                <input type="text" id="kategori-lainnya" style="display:none; margin-top: 10px;" placeholder="Ketik kategori lainnya">
+            </label>
+            <label><i class="fas fa-coins"></i> Jumlah:
+                <input type="text" id="jumlah" required oninput="formatRibuan(this)" placeholder="Masukkan jumlah">
+            </label>
+            <button type="submit"><i class="fas fa-save"></i> Simpan Transaksi</button>
+        </form>
+    </section>
+
+    <section id="section-tabel">
+        <h2><i class="fas fa-table"></i> Tabel Transaksi</h2>
+        
+        <!-- Filter Berdasarkan -->
+        <div class="form-group">
+            <label for="filter-tanggal-tabel"><i class="fas fa-filter"></i> Filter Berdasarkan:</label>
+            <select id="filter-tanggal-tabel" onchange="toggleFilterType('tabel')">
+                <option value="bulan">Bulan</option>
+                <option value="rentang">Rentang Tanggal</option>
+            </select>
+        </div>
+        
+        <!-- Filter Bulan -->
+        <div id="filter-bulan-tabel-container">
+            <div class="search-container">
+                <label>Filter Bulan:
+                    <input type="month" id="filter-bulan-tabel" onchange="saveFilterToLocalStorage(); loadTransaksi();">
+                </label>
+                
+                <label>Filter Tahun:
+                    <select id="filter-tahun-tabel" onchange="saveFilterToLocalStorage(); loadTransaksi();">
+                        <option value="">Semua Tahun</option>
+                        <!-- Options tahun akan diisi JavaScript -->
+                    </select>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Filter Rentang Tanggal -->
+        <div id="filter-rentang-tabel-container" style="display: none;">
+            <div class="date-range-filter">
+                <div class="form-group">
+                    <label for="filter-tanggal-mulai-tabel"><i class="fas fa-calendar-day"></i> Tanggal Mulai:</label>
+                    <input type="date" id="filter-tanggal-mulai-tabel" onchange="saveFilterToLocalStorage()">
+                </div>
+                <div class="form-group">
+                    <label for="filter-tanggal-selesai-tabel"><i class="fas fa-calendar-day"></i> Tanggal Selesai:</label>
+                    <input type="date" id="filter-tanggal-selesai-tabel" onchange="saveFilterToLocalStorage()">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="loadTransaksi(); showNotification('Filter rentang tanggal diterapkan', 'success');">
+                    <i class="fas fa-search"></i> Terapkan Filter
+                </button>
+                <button class="btn btn-secondary" onclick="resetDateRangeFilter('tabel')">
+                    <i class="fas fa-times"></i> Reset
+                </button>
+            </div>
+        </div>
+        
+        <!-- Pencarian -->
+        <div class="search-container">
+            <input type="text" id="search-deskripsi" class="search-input" placeholder="🔍 Cari deskripsi" oninput="saveFilterToLocalStorage(); loadTransaksi();">
+            <input type="text" id="search-kategori" class="search-input" placeholder="🔍 Cari kategori" oninput="saveFilterToLocalStorage(); loadTransaksi();">
+        </div>
+        
+        <table id="tabel-transaksi">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-calendar"></i> Tanggal</th>
+                    <th><i class="fas fa-align-left"></i> Deskripsi</th>
+                    <th><i class="fas fa-tag"></i> Kategori</th>
+                    <th><i class="fas fa-arrow-down"></i> Saldo Masuk</th>
+                    <th><i class="fas fa-arrow-up"></i> Saldo Keluar</th>
+                    <th><i class="fas fa-wallet"></i> Saldo Akhir</th>
+                    <th><i class="fas fa-cog"></i> Aksi</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td id="total-masuk"></td>
+                    <td id="total-keluar"></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    <section id="section-pengeluaran">
+        <h2><i class="fas fa-chart-pie"></i> Pengeluaran Berdasarkan Kategori</h2>
+        
+        <!-- Filter Berdasarkan -->
+        <div class="form-group">
+            <label for="filter-tanggal-pengeluaran"><i class="fas fa-filter"></i> Filter Berdasarkan:</label>
+            <select id="filter-tanggal-pengeluaran" onchange="toggleFilterType('pengeluaran')">
+                <option value="bulan">Bulan</option>
+                <option value="rentang">Rentang Tanggal</option>
+            </select>
+        </div>
+        
+        <!-- Filter Bulan -->
+        <div id="filter-bulan-pengeluaran-container">
+            <div class="search-container">
+                <label>Filter Bulan:
+                    <input type="month" id="filter-bulan-pengeluaran" onchange="saveFilterToLocalStorage(); loadPengeluaranKategori(); updateChart();">
+                </label>
+                
+                <label>Filter Tahun:
+                    <select id="filter-tahun-pengeluaran" onchange="saveFilterToLocalStorage(); loadPengeluaranKategori(); updateChart();">
+                        <option value="">Semua Tahun</option>
+                        <!-- Options tahun akan diisi JavaScript -->
+                    </select>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Filter Rentang Tanggal -->
+        <div id="filter-rentang-pengeluaran-container" style="display: none;">
+            <div class="date-range-filter">
+                <div class="form-group">
+                    <label for="filter-tanggal-mulai-pengeluaran"><i class="fas fa-calendar-day"></i> Tanggal Mulai:</label>
+                    <input type="date" id="filter-tanggal-mulai-pengeluaran" onchange="saveFilterToLocalStorage()">
+                </div>
+                <div class="form-group">
+                    <label for="filter-tanggal-selesai-pengeluaran"><i class="fas fa-calendar-day"></i> Tanggal Selesai:</label>
+                    <input type="date" id="filter-tanggal-selesai-pengeluaran" onchange="saveFilterToLocalStorage()">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="loadPengeluaranKategori(); updateChart(); showNotification('Filter rentang tanggal diterapkan', 'success');">
+                    <i class="fas fa-search"></i> Terapkan Filter
+                </button>
+                <button class="btn btn-secondary" onclick="resetDateRangeFilter('pengeluaran')">
+                    <i class="fas fa-times"></i> Reset
+                </button>
+            </div>
+        </div>
+        
+        <table id="tabel-kategori">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-tag"></i> Kategori</th>
+                    <th><i class="fas fa-money-bill-wave"></i> Jumlah Pengeluaran</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="chart-container">
+            <canvas id="chart-donat"></canvas>
+        </div>
+        <div id="color-editor">
+            <h3><i class="fas fa-palette"></i> Edit Warna Diagram</h3>
+            <!-- Color items will be dynamically added here -->
+        </div>
+    </section>
+
+    <section id="section-catatan">
+        <h2><i class="fas fa-sticky-note"></i> Catatan</h2>
+        <textarea id="catatan-text" rows="10" cols="50" placeholder="Tulis catatan keuangan Anda di sini..."></textarea><br>
+        <button class="btn btn-primary" onclick="simpanCatatan()"><i class="fas fa-save"></i> Simpan Catatan</button>
+        <button class="btn btn-secondary" onclick="tampilkanCatatan()"><i class="fas fa-eye"></i> Tampilkan Catatan</button>
+    </section>
+    
+    <!-- Section Backup & Restore -->
+    <section id="section-backup">
+        <h2><i class="fas fa-database"></i> Backup & Restore Data</h2>
+        
+        <div class="backup-option">
+            <h3><i class="fas fa-download"></i> Backup Data</h3>
+            <p>Simpan semua data transaksi ke file untuk cadangan.</p>
+            <div class="backup-buttons">
+                <button class="backup-btn json" onclick="backupData('json')">
+                    <i class="fas fa-file-code"></i> Backup JSON
+                </button>
+                <button class="backup-btn csv" onclick="backupData('csv')">
+                    <i class="fas fa-file-csv"></i> Backup CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="backup-option">
+            <h3><i class="fas fa-upload"></i> Restore Data</h3>
+            <p>Impor data transaksi dari file JSON sebelumnya.</p>
+            <div class="restore-area">
+                <p>Pilih file JSON yang ingin di-restore:</p>
+                <input type="file" id="restore-file" accept=".json" onchange="handleFileSelect(event)">
+                <label for="restore-file" class="file-label">
+                    <i class="fas fa-file-upload"></i> Pilih File JSON
+                </label>
+                <span id="restore-filename"></span>
+                <div style="margin-top: 15px;">
+                    <button class="backup-btn restore" onclick="restoreData()" id="restore-btn">
+                        <i class="fas fa-sync-alt"></i> Restore Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="backup-option">
+            <h3><i class="fas fa-info-circle"></i> Informasi</h3>
+            <ul>
+                <li>Backup JSON: Format lengkap untuk restore data</li>
+                <li>Backup CSV: Format sederhana untuk dibuka di Excel/Google Spredsheet</li>
+                <li>Restore hanya menerima file JSON yang berasal dari backup aplikasi ini</li>
+                <li>Data yang di-restore akan menggantikan semua data yang ada</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Theme Switcher Modal -->
+    <div id="theme-switcher-modal" class="custom-modal">
+        <div class="modal-content-costum">
+            <div class="modal-header-custom">
+                <h3><i class="fas fa-palette"></i> Pilih Tema Aplikasi</h3>
+                <span class="close-modal" onclick="closeThemeSwitcher()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Theme Selection (akan di-generate otomatis) -->
+                <div class="theme-selection">
+                    <!-- Generated by JavaScript -->
+                </div>
+    
+                <!-- Theme Test Section -->
+                <div class="theme-test-section">
+                    <h4><i class="fas fa-eye"></i> Preview Tema</h4>
+                    <div class="theme-test-card">
+                        <div class="test-header">
+                            <h5>Contoh Kartu</h5>
+                        </div>
+                        <div class="test-content">
+                            <p>Ini adalah contoh tampilan dengan tema yang dipilih</p>
+                            <div class="test-buttons">
+                                <button class="test-btn primary">Tombol Primary</button>
+                                <button class="test-btn success">Tombol Success</button>
+                                <button class="test-btn danger">Tombol Danger</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button onclick="testCurrentTheme()" class="test-theme-btn">
+                    <i class="fas fa-play"></i> Test Suara Tema
+                </button>
+                <button onclick="closeThemeSwitcher()" class="close-theme-btn">
+                    <i class="fas fa-times"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+    <div id="popup-catatan">
+        <h3><i class="fas fa-note-sticky"></i> Catatan Anda</h3>
+        <p id="catatan-content"></p>
+        <button onclick="tutupPopup()"><i class="fas fa-times"></i> Tutup</button>
+    </div>
+
+    <div id="splash-screen" aria-live="polite" aria-label="Layar pembuka aplikasi">
+        <div id="lottie-animation" role="img" aria-label="Animasi loading aplikasi"></div>
+        <div class="splash-text-container">
+            <p id="splash-text"></p>
+            <p id="splash-subtext"></p>
+        </div>
+    </div>
+
+    <footer>
+        <div id="storage-usage"></div>
+        <p>Aplikasi Catatan Keuangan &copy;9 Oktober 2025 | Dibuat Oleh Faiz Nadzimul Azka Untuk Ellen Azra 😘<i class="fas fa-heart" style="color: var(--accent);"></i></p>
+    </footer>
+
+<script src="script.js"></script>
+</body>
+</html>
